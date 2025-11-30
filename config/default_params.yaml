@@ -1,0 +1,24 @@
+# Default simulation parameters for TFIM Majorana analysis
+
+system:
+  n_sites: 100
+  boundary_conditions: "open"
+
+couplings:
+  lambda_1: 1.0
+  lambda_2: -1.2
+
+phase_diagram:
+  lambda_1_range: [-3.0, 3.0]
+  lambda_2_range: [-3.0, 3.0]
+  grid_size: 50
+
+numerics:
+  zero_mode_threshold: 0.01
+  k_points: 200
+
+output:
+  save_eigenvalues: true
+  save_eigenvectors: false
+  plot_dpi: 300
+  plot_format: "png"
