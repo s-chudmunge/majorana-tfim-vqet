@@ -7,14 +7,17 @@ This implements the extended Kitaev chain, which is the fermionic representation
 of the transverse-field Ising model (TFIM) after Jordan-Wigner transformation.
 
 FERMIONIC HAMILTONIAN (what we implement):
-H = -∑ᵢ [μ cᵢ†cᵢ + λ₁(cᵢ†cᵢ₊₁ + H.c.) + λ₂(cᵢ†cᵢ₊₂ + H.c.)
+H = ∑ᵢ [(μ - 2) cᵢ†cᵢ] - ∑ᵢ [λ₁(cᵢ†cᵢ₊₁ + H.c.) + λ₂(cᵢ†cᵢ₊₂ + H.c.)
          + λ₁(cᵢ†cᵢ₊₁† + H.c.) + λ₂(cᵢ†cᵢ₊₂† + H.c.)]
 
 where:
-  - μ: chemical potential (controls filling)
+  - μ: chemical potential shift (default 0 gives on-site energy -2)
   - λ₁: nearest-neighbor hopping and p-wave pairing amplitude
   - λ₂: next-nearest-neighbor hopping and p-wave pairing amplitude
   - cᵢ†, cᵢ: fermionic creation/annihilation operators
+
+Note: The -2 on-site term comes from the Jordan-Wigner transformation
+      of the transverse-field Ising model with g=1.
 
 CONNECTION TO SPIN MODEL:
 =========================
@@ -60,7 +63,9 @@ def build_tfim_hamiltonian(n, lambda_1, lambda_2, mu=0.0, pbc=False):
     lambda_2 : float
         Next-nearest-neighbor coupling strength
     mu : float, optional
-        Chemical potential (default: 0.0 for half-filling)
+        Chemical potential shift (default: 0.0). The actual on-site energy
+        is (mu - 2), where -2 comes from the Jordan-Wigner transformation.
+        Setting mu=0 gives the standard extended Kitaev model from Niu et al.
     pbc : bool, optional
         Use periodic boundary conditions (default: False for OBC)
 
@@ -74,7 +79,7 @@ def build_tfim_hamiltonian(n, lambda_1, lambda_2, mu=0.0, pbc=False):
     -----
     - OBC (pbc=False): Allows edge-localized Majorana zero modes
     - PBC (pbc=True): No physical edges, cleaner entanglement spectrum
-    - μ=0 corresponds to half-filling (typical for topological analysis)
+    - μ=0 gives on-site energy -2 (standard model with g=1 in TFIM)
     - Particle-hole symmetry: σ_x H σ_x = -H where σ_x = [[0,I],[I,0]]
     """
     h = np.zeros((n, n))
@@ -82,12 +87,12 @@ def build_tfim_hamiltonian(n, lambda_1, lambda_2, mu=0.0, pbc=False):
     H = np.zeros((2*n, 2*n))
 
     # Build single-particle Hamiltonian h
-    # Diagonal: chemical potential term
+    # Diagonal: -2 (from Jordan-Wigner transformation) + chemical potential
     # Off-diagonal: hopping terms
     for i in range(n):
         for j in range(n):
             if i == j:
-                h[i, j] = mu
+                h[i, j] = mu - 2  # -2 comes from J-W transformation, mu is chemical potential shift
             elif abs(j - i) == 1:
                 h[i, j] = lambda_1
             elif abs(j - i) == 2:
